@@ -8,18 +8,20 @@ use std::thread;
 use std::time::Duration;
 
 fn main() {
+    let delay: u64 = 1;
+
     let paint_window: PaintPosition = PaintPosition::new();
     let initial_canvas_pos: &(i32, i32) = &paint_window.initial_canvas_pos;
     let initial_palette_pos: &(i32, i32) = &paint_window.initial_palette_pos;
 
-    let img: image::DynamicImage = image::open("kasumi.png").unwrap();
+    let img: image::DynamicImage = image::open("example.png").unwrap();
     let pixels: Vec<image::Rgb<u8>> = imager::get_pixels(&img);
     let dimension: (u32, u32) = img.dimensions();
 
     unsafe {
-        winuser::SetCursorPos(635, 70);
+        winuser::SetCursorPos(initial_palette_pos.0, initial_palette_pos.1);
         winuser::mouse_event(winuser::MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
-        thread::sleep(Duration::from_millis(1));
+        thread::sleep(Duration::from_millis(delay));
         winuser::mouse_event(winuser::MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
     }
 
@@ -40,15 +42,15 @@ fn main() {
                 last_color = closest_color;
                 unsafe {
                     winuser::mouse_event(winuser::MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-                    thread::sleep(Duration::from_millis(1));
+                    thread::sleep(Duration::from_millis(delay));
                     winuser::SetCursorPos(closest_color.0, closest_color.1);
-                    thread::sleep(Duration::from_millis(1));
+                    thread::sleep(Duration::from_millis(delay));
                     winuser::mouse_event(winuser::MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
-                    thread::sleep(Duration::from_millis(1));
+                    thread::sleep(Duration::from_millis(delay));
                     winuser::mouse_event(winuser::MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-                    thread::sleep(Duration::from_millis(1));
+                    thread::sleep(Duration::from_millis(delay));
                     winuser::SetCursorPos(initial_canvas_pos.0 + x, initial_canvas_pos.1 + y);
-                    thread::sleep(Duration::from_millis(1));
+                    thread::sleep(Duration::from_millis(delay));
                     winuser::mouse_event(winuser::MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
                 }
             } else {
@@ -58,7 +60,7 @@ fn main() {
                     }
                     winuser::SetCursorPos(initial_canvas_pos.0 + x, initial_canvas_pos.1 + y);
                     if last_y != initial_canvas_pos.1 + y {
-                        thread::sleep(Duration::from_millis(1));
+                        thread::sleep(Duration::from_millis(delay));
                         winuser::mouse_event(winuser::MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
                         last_y = initial_canvas_pos.1 + y;
                     }
