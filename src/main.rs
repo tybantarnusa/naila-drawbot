@@ -1,21 +1,16 @@
 mod imager;
+mod mspaint;
+
 use image::{ self, GenericImageView };
+use mspaint::PaintPosition;
 use winapi::um::winuser;
 use std::thread;
 use std::time::Duration;
-// use winapi::shared::windef::POINT;
-
-// fn main() {
-//     loop {
-//         let mut cursor_pos = POINT { x: 0, y: 0 };
-//         unsafe { GetCursorPos(&mut cursor_pos) };
-//         println!("Mouse position: ({}, {})", cursor_pos.x, cursor_pos.y);
-//     }
-// }
 
 fn main() {
-    let initial_canvas_pos: (i32, i32) = (25, 170);
-    let initial_palette_pos: (i32, i32) = (635, 70);
+    let paint_window: PaintPosition = PaintPosition::new();
+    let initial_canvas_pos: &(i32, i32) = &paint_window.initial_canvas_pos;
+    let initial_palette_pos: &(i32, i32) = &paint_window.initial_palette_pos;
 
     let img: image::DynamicImage = image::open("kasumi.png").unwrap();
     let pixels: Vec<image::Rgb<u8>> = imager::get_pixels(&img);
