@@ -9,13 +9,16 @@ pub fn get_pixels(img: &DynamicImage) -> Vec<Rgb<u8>> {
         for x in 0..width {
             let pixel: &Rgb<u8> = img.get_pixel(x, y);
             pixels.push(*pixel)
-        }   
+        }
     }
 
-    return pixels;
+    pixels
 }
 
-pub fn get_closest_color_from_palette(color: &Rgb<u8>, initial_palette_pos: &(i32, i32)) -> (i32, i32) {
+pub fn get_closest_color_from_palette(
+    color: &Rgb<u8>,
+    initial_palette_pos: &(i32, i32),
+) -> (i32, i32) {
     let palette: [Rgb<u8>; 20] = [
         Rgb([0, 0, 0]),
         Rgb([127, 127, 127]),
@@ -38,7 +41,7 @@ pub fn get_closest_color_from_palette(color: &Rgb<u8>, initial_palette_pos: &(i3
         Rgb([115, 145, 195]),
         Rgb([199, 191, 230]),
     ];
-    
+
     let mut distance_vector: Vec<(usize, f64)> = Vec::new();
     for i in 0..palette.len() {
         let color2: Rgb<u8> = palette[i];
@@ -47,12 +50,19 @@ pub fn get_closest_color_from_palette(color: &Rgb<u8>, initial_palette_pos: &(i3
         let color2_float: [f64; 3] = [color2[0] as f64, color2[1] as f64, color2[2] as f64];
 
         let r: f64 = (color1_float[0] + color2_float[0]) / 2.0;
-        let distance: f64 = (((color2_float[0] - color1_float[0])*(2.0+(r/256.0))).powf(2.0) + ((color2_float[1] - color1_float[1])*4.0).powf(2.0) + ((color2_float[2] - color1_float[2])*(2.0+((256.0 - r)/256.0))).powf(2.0)).sqrt();
+        let distance: f64 = (((color2_float[0] - color1_float[0]) * (2.0 + (r / 256.0))).powf(2.0)
+            + ((color2_float[1] - color1_float[1]) * 4.0).powf(2.0)
+            + ((color2_float[2] - color1_float[2]) * (2.0 + ((256.0 - r) / 256.0))).powf(2.0))
+        .sqrt();
         distance_vector.push((i, distance));
     }
 
     distance_vector.sort_by(|a: &(usize, f64), b: &(usize, f64)| a.1.partial_cmp(&b.1).unwrap());
     let closest_idx: usize = distance_vector[0].0;
-    let mouse_pos: (i32, i32) = (initial_palette_pos.0 + (closest_idx as i32 % 10 * 22), (initial_palette_pos.1 + (closest_idx as i32 / 10 * 22)));
-    return mouse_pos;
+    let mouse_pos: (i32, i32) = (
+        initial_palette_pos.0 + (closest_idx as i32 % 10 * 22),
+        (initial_palette_pos.1 + (closest_idx as i32 / 10 * 22)),
+    );
+
+    mouse_pos
 }

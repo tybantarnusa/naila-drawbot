@@ -6,5 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+dotenv = "0.15.0"
 image = "0.24.6"
+redis = "0.23.0"
 winapi = { version = "0.3.9", features = ["winuser"] }
