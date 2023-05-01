@@ -11,7 +11,7 @@ impl PaintPosition {
     pub fn new() -> PaintPosition {
         let window_name = "Untitled - Paint\0";
         let hwnd = unsafe { winuser::FindWindowA(null_mut(), window_name.as_ptr() as *const i8) };
-        if hwnd != null_mut() {
+        if !hwnd.is_null() {
             let mut rect: RECT = RECT {
                 left: 0,
                 top: 0,
