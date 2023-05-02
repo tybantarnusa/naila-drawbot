@@ -71,3 +71,11 @@ pub fn get_closest_color_from_palette(
 
     mouse_pos
 }
+
+pub fn compare_color(color_a: &Rgb<u8>, color_b: &Rgb<u8>) -> Option<std::cmp::Ordering> {
+    let a_brightness: f64 =
+        0.299 * color_a[0] as f64 + 0.587 * color_a[1] as f64 + 0.114 * color_a[2] as f64;
+    let b_brightness: f64 =
+        0.299 * color_b[0] as f64 + 0.587 * color_b[1] as f64 + 0.114 * color_b[2] as f64;
+    a_brightness.partial_cmp(&b_brightness)
+}
