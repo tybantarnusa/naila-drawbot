@@ -20,7 +20,7 @@ fn main() {
     let pixels: Vec<image::Rgb<u8>> = imager::get_pixels(&img);
     let dimension: (u32, u32) = img.dimensions();
 
-    let mut result_color_vec: Vec<(u32, u32, image::Rgb<u8>)> = Vec::new();
+    let mut sorted_color_vec: Vec<(u32, u32, image::Rgb<u8>)> = Vec::new();
     {
         let mut result_img: image::ImageBuffer<image::Rgb<u8>, Vec<u8>> =
             image::RgbImage::new(dimension.0, dimension.1);
@@ -29,18 +29,28 @@ fn main() {
                 let (_, closest_color): (usize, image::Rgb<u8>) =
                     imager::get_closest_color(&pixels[i]);
                 result_img.put_pixel(x, y, closest_color);
-                result_color_vec.push((x, y, closest_color));
+                if !imager::is_white(&closest_color) {
+                    sorted_color_vec.push((x, y, closest_color));
+                }
                 i += 1;
             }
         }
         result_img.save("result.png").unwrap();
     }
 
-    result_color_vec.sort_by(
+    sorted_color_vec.sort_by(
         |a: &(u32, u32, image::Rgb<u8>), b: &(u32, u32, image::Rgb<u8>)| {
             imager::compare_color(&a.2, &b.2).unwrap()
         },
     );
+
+    let mut result_color_vec: Vec<(u32, u32, image::Rgb<u8>)> = Vec::new();
+    for y in 0..dimension.1 {
+        for x in 0..dimension.0 {
+            result_color_vec.push((x, y, image::Rgb([255, 255, 255])));
+        }
+    }
+    result_color_vec.extend(sorted_color_vec);
 
     let paint_window: PaintPosition = PaintPosition::new();
     let initial_canvas_pos: &(i32, i32) = &paint_window.initial_canvas_pos;
@@ -54,12 +64,12 @@ fn main() {
     }
 
     let mut last_color: (i32, i32) = (i32::MIN, i32::MIN);
-    let mut last_x: i32 = i32::MIN;
-    let mut last_y: i32 = i32::MIN;
+    let mut last_x: i32 = result_color_vec[0].0 as i32 + initial_canvas_pos.0;
+    let mut last_y: i32 = result_color_vec[0].1 as i32 + initial_canvas_pos.1;
 
     let start_time: Instant = Instant::now();
     println!("Drawing... (Press ESC to stop)");
-    for result_color in result_color_vec {
+    for result_color in result_color_vec.iter() {
         if unsafe { winuser::GetAsyncKeyState(winuser::VK_ESCAPE) } != 0 {
             break;
         }

@@ -79,3 +79,7 @@ pub fn compare_color(color_a: &Rgb<u8>, color_b: &Rgb<u8>) -> Option<std::cmp::O
         0.299 * color_b[0] as f64 + 0.587 * color_b[1] as f64 + 0.114 * color_b[2] as f64;
     a_brightness.partial_cmp(&b_brightness)
 }
+
+pub fn is_white(color: &Rgb<u8>) -> bool {
+    color[0] == 255 && color[1] == 255 && color[2] == 255
+}
