@@ -1,28 +1,28 @@
 mod imager;
 mod mspaint;
+mod config;
 
-use dotenv::dotenv;
 use image::{self, GenericImageView};
 use mspaint::PaintPosition;
-use redis::{self, Commands};
-use std::env;
+use ulid::Ulid;
 use std::fs;
 use std::thread;
 use std::time::{Duration, Instant};
 use winapi::um::winuser;
 
+use crate::config::ConfigData;
+use crate::config::Config;
+
 fn main() {
-    dotenv().ok();
-    let redis_conn_str: &str =
-        &env::var("REDIS_CONN").expect("Cannot connect to Redis because credential not set.");
-    let redis_client: redis::Client =
-        redis::Client::open(redis_conn_str).expect("Cannot connect to Redis.");
-    let mut redis_conn: redis::Connection = redis_client
-        .get_connection()
-        .expect("Cannot get Redis connection.");
+    let config_str = fs::read_to_string("config.toml").expect("Cannot find config file.");
+    let config: Config;
+    {
+        let config_data: ConfigData = toml::from_str(&config_str).expect("Invalid config file.");
+        config = config_data.config;
+    }
 
     const DELAY: u64 = 1;
-    const IMAGE_FILENAME: &str = "example.png";
+    let image_filename = format!("{}\\drawing\\{}", &config.naila_dir, &config.image_filename);
 
     loop {
         let mut i: usize = 0;
@@ -30,7 +30,7 @@ fn main() {
         let img: image::DynamicImage;
         loop {
             println!("Looking for image...");
-            img = match image::open(IMAGE_FILENAME) {
+            img = match image::open(&image_filename) {
                 Ok(loaded_img) => loaded_img,
                 Err(_) => continue,
             };
@@ -147,8 +147,17 @@ fn main() {
             drawing_duration.as_secs() % 60
         );
 
-        let _ = redis_conn.set_ex::<&str, bool, u8>("naila:draw:done", true, 60);
+        let tunnel_path = format!("{}\\drawing\\{}", &config.naila_dir, &config.tunnel_filename);
+        let prompt = match fs::read_to_string(&tunnel_path) {
+            Ok(txt) => txt,
+            Err(_) => {
+                let ulid = Ulid::new();
+                ulid.to_string()
+            }
+        };
 
-        fs::remove_file(IMAGE_FILENAME).expect("Cannot delete image.");
+        if fs::rename(&image_filename, format!("{}\\drawing\\{}.png", &config.naila_dir, prompt)).is_err() {
+            println!("Cannot rename image.");
+        }
     }
 }
