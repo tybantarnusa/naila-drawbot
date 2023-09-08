@@ -2,3 +2,4 @@
 naila_dir="E:\\Projects\\ai-vtuber"
 image_filename="image.png"
 tunnel_filename="tunnel.txt"
+delay=5

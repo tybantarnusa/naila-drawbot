@@ -21,18 +21,24 @@ fn main() {
         config = config_data.config;
     }
 
-    const DELAY: u64 = 1;
+    let delay: u64 = config.delay;
     let image_filename = format!("{}\\drawing\\{}", &config.naila_dir, &config.image_filename);
 
     loop {
         let mut i: usize = 0;
 
         let img: image::DynamicImage;
+        println!("Looking for image...");
         loop {
-            println!("Looking for image...");
             img = match image::open(&image_filename) {
-                Ok(loaded_img) => loaded_img,
-                Err(_) => continue,
+                Ok(loaded_img) => {
+                    println!("Image found!");
+                    loaded_img
+                },
+                Err(_) => {
+                    thread::sleep(Duration::from_millis(100));
+                    continue;
+                },
             };
             break;
         }
@@ -78,7 +84,7 @@ fn main() {
         unsafe {
             winuser::SetCursorPos(initial_palette_pos.0, initial_palette_pos.1);
             winuser::mouse_event(winuser::MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
-            thread::sleep(Duration::from_millis(DELAY));
+            thread::sleep(Duration::from_millis(delay));
             winuser::mouse_event(winuser::MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
         }
 
@@ -104,17 +110,17 @@ fn main() {
                 last_color = closest_color;
                 unsafe {
                     winuser::mouse_event(winuser::MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-                    thread::sleep(Duration::from_millis(DELAY));
+                    thread::sleep(Duration::from_millis(delay));
                     winuser::SetCursorPos(closest_color.0, closest_color.1);
-                    thread::sleep(Duration::from_millis(DELAY));
+                    thread::sleep(Duration::from_millis(delay));
                     for _ in 0..3 {
                         winuser::mouse_event(winuser::MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
-                        thread::sleep(Duration::from_millis(DELAY));
+                        thread::sleep(Duration::from_millis(delay));
                         winuser::mouse_event(winuser::MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
-                        thread::sleep(Duration::from_millis(DELAY));
+                        thread::sleep(Duration::from_millis(delay));
                     }
                     winuser::SetCursorPos(initial_canvas_pos.0 + x, initial_canvas_pos.1 + y);
-                    thread::sleep(Duration::from_millis(DELAY));
+                    thread::sleep(Duration::from_millis(delay));
                     winuser::mouse_event(winuser::MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
                 }
             } else {
@@ -126,7 +132,7 @@ fn main() {
                     winuser::SetCursorPos(initial_canvas_pos.0 + x, initial_canvas_pos.1 + y);
                     if last_y != initial_canvas_pos.1 + y || last_x != initial_canvas_pos.0 + x - 1
                     {
-                        thread::sleep(Duration::from_millis(DELAY));
+                        thread::sleep(Duration::from_millis(delay));
                         winuser::mouse_event(winuser::MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
                         last_y = initial_canvas_pos.1 + y;
                     }
@@ -137,6 +143,10 @@ fn main() {
         }
 
         unsafe {
+            winuser::mouse_event(winuser::MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+            winuser::SetCursorPos(initial_palette_pos.0, initial_palette_pos.1);
+            winuser::mouse_event(winuser::MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+            thread::sleep(Duration::from_millis(delay));
             winuser::mouse_event(winuser::MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
         }
 
@@ -158,6 +168,10 @@ fn main() {
 
         if fs::rename(&image_filename, format!("{}\\drawing\\{}.png", &config.naila_dir, prompt)).is_err() {
             println!("Cannot rename image.");
+        }
+
+        if fs::write(&tunnel_path, "####DONE####").is_err() {
+            println!("Cannot notify finish.");
         }
     }
 }

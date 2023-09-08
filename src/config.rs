@@ -10,4 +10,5 @@ pub struct Config {
     pub naila_dir: String,
     pub image_filename: String,
     pub tunnel_filename: String,
+    pub delay: u64,
 }
